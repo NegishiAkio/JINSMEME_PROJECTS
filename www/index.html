@@ -1,0 +1,540 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="Content-Security-Policy" content="default-src * data: gap: https://ssl.gstatic.com; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval'">
+  <script src="components/loader.js"></script>
+  <script src="lib/onsenui/js/onsenui.min.js"></script>
+  <script src="intro.js"></script>
+  <script src="lib/onsenui/js/intro.js"></script>
+  <script src="lib/onsenui/js/jquery.js"></script>
+
+  <link rel="stylesheet" href="components/loader.css">
+  <link rel="stylesheet" href="intro.css">
+  <link rel="stylesheet" href="lib/onsenui/css/onsenui.css">
+  <link rel="stylesheet" href="lib/onsenui/css/introjs.css">
+  <link rel="stylesheet" href="lib/onsenui/css/onsen-css-components.css">
+  <link rel="stylesheet" href="css/style.css">
+
+<script src="jquery-3.2.1.min.js"></script>
+  <script>
+  $(function(){
+    $("#help").click(function(){
+        introJs().start();
+        
+    });
+});
+
+//デバイスの追加
+    document.addEventListener("deviceready", function(){
+            // デバイストークンを取得してinstallationに登録する
+            window.NCMB.monaca.setDeviceToken(
+                "0049846dc9d4eb0508d608e41a919462ecb1c738966617ffbb2cd2dd85058f7e",
+                "9af51e17c73468ae01d6304fd72c904f329da744322cc894b38179c5a3da55c3",
+                "1024541593978"
+            );
+        },false);
+        
+        
+
+    // 起動時のイベント
+    document.addEventListener('deviceready', function() {
+        // アプリの初期化処理
+var ncmb = new NCMB("0049846dc9d4eb0508d608e41a919462ecb1c738966617ffbb2cd2dd85058f7e","9af51e17c73468ae01d6304fd72c904f329da744322cc894b38179c5a3da55c3");
+        cordova.plugins.JinsMemePlugin.setAppClientID(
+            '339070455094895',
+            'cupbrp27503fhln0z4ru463k3jvgptm2',
+            function() {
+                restartScan();
+            },
+            function() {
+                console.log('Error: setAppClientID');
+            }
+        );
+    });
+    
+//----------------------------JINSMEME接続 デバイスのスキャン開始-------------------------------------------
+    function startScan() {
+        // デバイス選択ダイアログを表示
+        var deviceList = document.getElementById('deviceList');
+        deviceList.innerHTML = '<ons-list-header>デバイスを選択</ons-list-header>';
+        document.getElementById('selectDeviceDialog').show();
+        
+        cordova.plugins.JinsMemePlugin.startScan(function(device) {
+            // ダイアログにデバイスを追加
+            deviceList.innerHTML += "<ons-list-item tappable onclick=\"connect('" + device + "')\">" + device + "</ons-list-item>";
+        }, function() {
+            console.log('Error: startScan');
+        });
+    }
+    
+    // デバイスのスキャン停止
+    function stopScan(successCallback) {
+        cordova.plugins.JinsMemePlugin.stopScan(function() {
+            if(successCallback) successCallback();
+        }, function() {
+            console.log('Error: stopScan');
+        });
+    }
+
+
+    // デバイスのスキャン再開
+    function restartScan() {
+        stopDataReport();
+        disconnect();
+        stopScan(startScan);
+    }
+    // アプリとデバイスの接続
+    function connect(device) {
+        // スキャン停止
+        stopScan();
+        // ダイアログを閉じてモーダルを表示
+        document.getElementById('selectDeviceDialog').hide();
+        document.getElementById('modal').show();
+
+        // 選択されたデバイスに接続
+        cordova.plugins.JinsMemePlugin.connect(device, function() {
+            //startDataReport();
+            document.getElementById('modal').hide();
+        }, function() {
+            console.log('Disconnect');
+        }, function() {
+            console.log('Error: connect');
+            document.getElementById('modal').hide();
+        });
+    }
+    
+    // アプリとデバイスの切断
+    function disconnect() {
+        cordova.plugins.JinsMemePlugin.disconnect(function() {}, function() {
+            console.log('Error: disconnect');
+        });
+    }
+    // 計測開始
+
+var count = 100;
+var kaisu = 0;
+var ncmb = new NCMB("0049846dc9d4eb0508d608e41a919462ecb1c738966617ffbb2cd2dd85058f7e","9af51e17c73468ae01d6304fd72c904f329da744322cc894b38179c5a3da55c3");
+var push = new ncmb.Push();
+  
+  //----------------------計測開始---------------------------------------------------------------------
+   function startDataReport() {
+        cordova.plugins.JinsMemePlugin.startDataReport(function(data) {
+            //document.getElementById('modal').hide();
+            //console.log(data.pitch);
+
+        if(data.pitch >= 45) {
+            if(kaisu==0){
+              // console.log('test'); 
+            }
+            kaisu = 1;
+        } else if(data.pitch <= 44 && kaisu == 1){
+            count = count + 1;
+            console.log(count);
+            if(count == 10 && kaisu == 1){
+        //プッシュ通知を表示させるプログラム
+var push = new ncmb.Push();
+push.set("immediateDeliveryFlag", true)
+    .set("message", "姿勢の悪くなった回数が10回になりました")
+    .set("target", ["android"]);
+    push.send()
+    .then(function(push){
+      // 送信後処理
+      console.log("10届いた");
+     })
+    .catch(function(err){
+        console.log("10notfound");
+       // エラー処理
+     });
+ } else if(count == 20 && kaisu == 1){
+     
+     var push = new ncmb.Push();
+push.set("immediateDeliveryFlag", true)
+    .set("message", "姿勢の悪くなった回数が20回になりました")
+    .set("target", ["android"]);
+    push.send()
+    .then(function(push){
+      // 送信後処理
+      console.log("20届いた");
+     })
+    .catch(function(err){
+       // エラー処理
+       console.log("20notfound");
+     });
+ }else if(count == 30 && kaisu == 1){
+     
+     var push = new ncmb.Push();
+push.set("immediateDeliveryFlag", true)
+    .set("message", "姿勢の悪くなった回数が30回になりました")
+    .set("target", ["android"]);
+    push.send()
+    .then(function(push){
+      // 送信後処理
+     })
+    .catch(function(err){
+       // エラー処理
+     });
+ }else if(count == 40 && kaisu == 1){
+     
+     var push = new ncmb.Push();
+push.set("immediateDeliveryFlag", true)
+    .set("message", "姿勢の悪くなった回数が40回になりました")
+    .set("target", ["android"]);
+    push.send()
+    .then(function(push){
+      // 送信後処理
+     })
+    .catch(function(err){
+       // エラー処理
+     });
+ }else if(count == 50 && kaisu == 1){
+     
+     var push = new ncmb.Push();
+push.set("immediateDeliveryFlag", true)
+    .set("message", "姿勢の悪くなった回数が50回になりました")
+    .set("target", ["android"]);
+    push.send()
+    .then(function(push){
+      // 送信後処理
+     })
+    .catch(function(err){
+       // エラー処理
+     });
+ }else if(count == 60 && kaisu == 1){
+     
+     var push = new ncmb.Push();
+push.set("immediateDeliveryFlag", true)
+    .set("message", "姿勢の悪くなった回数が60回になりました")
+    .set("target", ["android"]);
+    push.send()
+    .then(function(push){
+      // 送信後処理
+     })
+    .catch(function(err){
+       // エラー処理
+     });
+ }else if(count == 70 && kaisu == 1){
+     
+    var push = new ncmb.Push();
+push.set("immediateDeliveryFlag", true)
+    .set("message", "姿勢の悪くなった回数が70回になりました")
+    .set("target", ["android"]);
+    push.send()
+    .then(function(push){
+      // 送信後処理
+     })
+    .catch(function(err){
+       // エラー処理
+     });
+ }else if(count == 80 && kaisu == 1){
+     
+    var push = new ncmb.Push();
+push.set("immediateDeliveryFlag", true)
+    .set("message", "姿勢の悪くなった回数が80回になりました")
+    .set("target", ["android"]);
+    push.send()
+    .then(function(push){
+      // 送信後処理
+     })
+    .catch(function(err){
+       // エラー処理
+     });
+ }else if(count == 90 && kaisu == 1){
+     
+var push = new ncmb.Push();
+push.set("immediateDeliveryFlag", true)
+    .set("message", "姿勢の悪くなった回数が90回になりました")
+    .set("target", ["android"]);
+    push.send()
+    .then(function(push){
+      // 送信後処理
+     })
+    .catch(function(err){
+       // エラー処理
+     });
+
+ }else if(count == 101 && kaisu == 1){
+     
+     var push = new ncmb.Push();
+         push.set("immediateDeliveryFlag", true)
+    .set("message", "姿勢の悪くなった回数が100回を超えました")
+    .set("target", ["android"]);
+    push.send()
+    .then(function(push){
+      // 送信後処理
+      console.log("100届いた");
+     })
+    .catch(function(err){
+       // エラー処理
+       console.log("notfound");
+     });
+}
+            kaisu = 0;
+        }
+
+
+        }, function() {
+            console.log('Error: startDataReport');
+            document.getElementById('modal').hide();
+        });
+
+    }
+
+
+     // 計測停止
+     var shisei = 0;
+    function stopDataReport() {
+        shisei = count;
+        console.log(shisei + "傾いた");
+        count = 0;
+        kaisu = 0;
+cordova.plugins.JinsMemePlugin.stopDataReport(function() {}, function() {
+            ('Error: stopDataReport');
+        });
+    }
+    
+
+    
+    // プラグアイコン押下時
+    function reconnect() {
+        ons.notification.confirm("再接続しますか？")
+        .then(function(result) {
+           if(result) {
+               restartScan();
+           }
+        });
+    }
+   
+   
+    function Click(lol){
+        if (lol.value == "START") {
+        document.getElementById('modal2').show();
+        startDataReport();
+    } else {
+		lol.value = "START";
+	}
+}
+
+ document.addEventListener('init', function(event) {
+      var page = event.target;
+
+      if (page.id == 'second-page') {
+        // page.querySelector('#count_tubota').innerHTML = page.data.count_tubota;
+        page.querySelector('#count_shisei').innerHTML = shisei;
+      }
+      if(shisei >=100){
+          page.querySelector("#count_ten_0").innerHTML = "上記の動画を参照することをおすすめします。<br><p style='font-size:20px'>■簡単にできるストレッチ■</p><br>1.手すりを両手でつかみ、足を開いて立ったまま、しゃがむように腰を落とします。<br>20~30秒程度、同じ姿勢をキープし、背中を1~3回ほど伸ばします。背中の筋肉を意識しながら、ゆっくりとのばしましょう。";
+          page.querySelector("#count_ten_1").innerHTML = "■食事■<br>介護職員が食事介助を行う際には基本的には座って介助を行います。ですが多くの方の介助をしなければいけない場合、座っている余裕はなく、たっての介助となるので　中腰になってしまいます。";
+          page.querySelector("#count_ten_2").innerHTML = "腰を曲げるのではなく、腰を落とすようにして業務を行う。<br>";
+          page.querySelector("#count_ten_2_1").innerHTML ="コルセットなどのグッズを使用しましょう<br>";
+          page.querySelector("#count_ten_2_2").innerHTML ="定期的なエクササイズ。ストレッチを行うようにしましょう";
+          page.querySelector("#youtube").innerHTML = "<iframe width='300' height='160' src='https://www.youtube.com/embed/XF18ZN930hw' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>";
+          page.querySelector("#youtube2_yobou").innerHTML = "<iframe width='300' height='150' src='https://www.youtube.com/embed/o5Zrl_NLQTY' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
+      }else if(shisei >=90){
+          page.querySelector("#count_ten_0").innerHTML = "上記の動画を参照することをおすすめします。<br><p style='font-size:20px'>■簡単にできるストレッチ■</p><br>事務機材を利用した大腿前面のストレッチをおすすめします。椅子（椅子机や棚も可）に手を置き右足を後ろに上げそれを持ち上げます。20~30秒間姿勢を維持し、左右それぞれ1~3回伸ばします。";
+          page.querySelector("#count_ten_1").innerHTML = "■移動■<br>ベッドから車椅子などへ利用者様を移すことを移乗といいますが、正しい姿勢で行わないと腰に負担がかかってしまいます。";
+          page.querySelector("#count_ten_2").innerHTML = "腰を曲げるのではなく、腰を落とすようにして業務を行う。<br>";
+          page.querySelector("#count_ten_2_1").innerHTML ="コルセットなどのグッズを使用しましょう<br>";
+          page.querySelector("#count_ten_2_2").innerHTML ="定期的なエクササイズ。ストレッチを行うようにしましょう";
+          page.querySelector("#youtube").innerHTML = "<iframe width='300' height='150' src='https://www.youtube.com/embed/LdGwPlr7N5E' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
+          page.querySelector("#youtube2_yobou").innerHTML = "<iframe width='300' height='150' src='https://www.youtube.com/embed/5XjP5SaR_UM' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
+      }else if(shisei >=80){
+          page.querySelector("#count_ten_0").innerHTML = "上記の動画を参照することをおすすめします。<br><p style='font-size:20px'>■簡単にできるストレッチ■</p><br><p style='font-size:1opx;'>1</p>手すりを両手でつかみ、足を開いて立ったまま、しゃがむように腰を落とします。<br><p style='font-size:1opx;'>2</p>20～30秒間程度、同じ姿勢をキープし、背中を1~3回ほど伸ばします。背中の筋肉を意識しながら、ゆっくりと伸ばしましょう。";
+          page.querySelector("#count_ten_1").innerHTML = "■掃除■<br>洗濯日常を支える仕事なので、食器を洗う、ベッドメイクをする、床下を掃除する、バケツの中で衣類の汚れを落とすなどといった、介護職員は主婦の方と共通した腰痛の原因があります。";
+          page.querySelector("#count_ten_2").innerHTML = "腰を曲げるのではなく、腰を落とすようにして業務を行う。<br>";
+          page.querySelector("#count_ten_2_1").innerHTML ="コルセットなどのグッズを使用しましょう<br>";
+          page.querySelector("#count_ten_2_2").innerHTML ="定期的なエクササイズ。ストレッチを行うようにしましょう";
+          page.querySelector("#youtube").innerHTML = "<iframe width='300' height='150' src='https://www.youtube.com/embed/XF18ZN930hw' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
+          page.querySelector("#youtube2_yobou").innerHTML = "<iframe width='300' height='150' src='https://www.youtube.com/embed/o5Zrl_NLQTY' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
+      }else if(shisei >=70){
+          page.querySelector("#count_ten_0").innerHTML = "上記の動画を参照することをおすすめします。<br><p style='font-size:20px'>■簡単にできるストレッチ■</p><br><p style='font-size:1opx;'>1</p>仰向けに寝て両ひざを三角になるように立てます。<br><p style='font-size:1opx;'>2</p>足の裏をできるだけ床に付けるイメージで、両足を床につけたまま右にゆっくり倒します。<br><p style='font-size:1opx;'>3</p>気持ち良いと感じるところまで倒したら、そのまま5秒ストップ。<br><p style='font-size:1opx;'>4</p>ゆっくりと基本姿勢に戻して一度とめ、今度は左へ倒します。<br>この動作を3~5回繰り返します。寝ながらできるため、寝る前に行いましょう。質の良い睡眠のためにもおすすめです。";
+          page.querySelector("#count_ten_1").innerHTML = "■着替え■<br>利用者様は基本的に座っているので、介護職員はやや前傾となり、腰に負担がかかります。";
+          page.querySelector("#count_ten_2").innerHTML = "腰を曲げるのではなく、腰を落とすようにして業務を行う。<br>";
+          page.querySelector("#count_ten_2_1").innerHTML ="コルセットなどのグッズを使用しましょう<br>";
+          page.querySelector("#count_ten_2_2").innerHTML ="定期的なエクササイズ。ストレッチを行うようにしましょう";
+          page.querySelector("#youtube").innerHTML = "<iframe width='300' height='150' src='https://www.youtube.com/embed/J_gfeAFe-2I' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
+          page.querySelector("#youtube2_yobou").innerHTML = "<iframe width='300' height='150' src='https://www.youtube.com/embed/o5Zrl_NLQTY' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
+      }else if(shisei >=60){
+          page.querySelector("#count_ten_0").innerHTML = "上記の動画を参照することをおすすめします。<br><p style='font-size:20px'>■簡単にできるストレッチ■</p><br><p style='font-size:1opx;'>1</p>両足を腰幅に広げて椅子に座り、状態を右にひねります。<br><p style='font-size:1opx;'>2</p>左手で右腿の外側をつかみ、そのままからだをさらに右にひねります。<br><p style='font-size:1opx;'>3</p>左側の腰回りの伸びを感じたら30秒止めて、ゆっくり戻します。<br>左右交互に行ってください。";
+          page.querySelector("#count_ten_1").innerHTML = "■食事■<br>介護職員が食事介助を行う際には基本的には座って介助を行います。ですが多くの方の介助をしなければいけない場合、座っている余裕はなく、たっての介助となるので　中腰になってしまいます。"
+          page.querySelector("#count_ten_2").innerHTML = "腰を曲げるのではなく、腰を落とすようにして業務を行う。<br>";
+          page.querySelector("#count_ten_2_1").innerHTML ="コルセットなどのグッズを使用しましょう<br>";
+          page.querySelector("#count_ten_2_2").innerHTML ="定期的なエクササイズ。ストレッチを行うようにしましょう";
+          page.querySelector("#youtube").innerHTML = "<iframe width='300' height='150' src='https://www.youtube.com/embed/yGvThcdwyQc' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
+          page.querySelector("#youtube2_yobou").innerHTML = "<iframe width='300' height='150' src='https://www.youtube.com/embed/o5Zrl_NLQTY' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
+      }else if(shisei >=50){
+          page.querySelector("#count_ten_0").innerHTML = "上記の動画を参照することをおすすめします。<br><p style='font-size:20px'>■簡単にできるストレッチ■</p><br><p style='font-size:1opx;'>1</p>両足を腰幅に広げて椅子に座り、状態を右にひねります。<br><p style='font-size:1opx;'>2</p>左手で右腿の外側をつかみ、そのままからだをさらに右にひねります。<br><p style='font-size:1opx;'>3</p>左側の腰回りの伸びを感じたら30秒止めて、ゆっくり戻します。<br>左右交互に行ってください。";
+          page.querySelector("#count_ten_1").innerHTML = "■移動■<br>ベッドから車椅子などへ利用者様を移すことを移乗といいますが、正しい姿勢で行わないと腰に負担がかかってしまいます。";
+          page.querySelector("#count_ten_2").innerHTML = "腰を曲げるのではなく、腰を落とすようにして業務を行う。<br>";
+          page.querySelector("#count_ten_2_1").innerHTML ="コルセットなどのグッズを使用しましょう。<br>";
+          page.querySelector("#count_ten_2_2").innerHTML ="定期的なエクササイズ。ストレッチを行うようにしましょう。";
+          page.querySelector("#youtube").innerHTML = "<iframe width='300' height='150' src='https://www.youtube.com/embed/LdGwPlr7N5E' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
+          page.querySelector("#youtube2_yobou").innerHTML = "<iframe width='300' height='150' src='https://www.youtube.com/embed/5XjP5SaR_UM' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
+      }else if(shisei >=40){
+          page.querySelector("#count_ten_0").innerHTML = "上記の動画を参照することをおすすめします。<br><p style='font-size:20px'>■簡単にできるストレッチ■</p><br>膝を90度になるまで腰を下ろし。腰を動かさず、肩を内側に入れる動作をする。この動作を３秒間キープしこれを左右５回繰り返しましょう。";
+          page.querySelector("#count_ten_1").innerHTML = "■排泄■<br>ベッドの高さを腰より上まで上げることのできないような場合に、おむつ交換などをお行う際には介護職員は中腰となってしまいます。";
+          page.querySelector("#count_ten_2").innerHTML = "腰を曲げるのではなく、腰を落とすようにして業務を行う。<br>";
+          page.querySelector("#count_ten_2_1").innerHTML ="コルセットなどのグッズを使用しましょう<br>";
+          page.querySelector("#count_ten_2_2").innerHTML ="定期的なエクササイズ。ストレッチを行うようにしましょう";
+          page.querySelector("#youtube").innerHTML = "<iframe width='300' height='150' src='https://www.youtube.com/embed/EaEWiFiXJzo' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
+          page.querySelector("#youtube2_yobou").innerHTML = "<iframe width='300' height='150' src='https://www.youtube.com/embed/5XjP5SaR_UM' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
+      }else if(shisei >=30){
+          page.querySelector("#count_ten_0").innerHTML = "上記の動画を参照することをおすすめします。<br><p style='font-size:20px'>■簡単にできるストレッチ■</p><br><p style='font-size:1opx;'>1</p>手すりを両手でつかみ、足を開いて立ったまま、しゃがむように腰を落とします。<br><p style='font-size:1opx;'>2</p>20～30秒間程度、同じ姿勢をキープし、背中を1~3回ほど伸ばします。背中の筋肉を意識しながら、ゆっくりと伸ばしましょう。";
+          page.querySelector("#count_ten_1").innerHTML = "■掃除■<br>洗濯は、日常を支える仕事なので、食器を洗う、ベッドメイクをする、床下を掃除する、バケツの中で衣類の汚れを落とすなどといった、介護職員は主婦の方と共通した腰痛の原因があります。";
+          page.querySelector("#count_ten_2").innerHTML = "腰を曲げるのではなく、腰を落とすようにして業務を行う。<br>";
+          page.querySelector("#count_ten_2_1").innerHTML ="コルセットなどのグッズを使用しましょう。<br>";
+          page.querySelector("#count_ten_2_2").innerHTML ="定期的なエクササイズ、ストレッチを行うようにしましょう";
+          page.querySelector("#youtube").innerHTML = "<iframe width='300' height='150' src='https://www.youtube.com/embed/yGvThcdwyQc' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
+          page.querySelector("#youtube2_yobou").innerHTML = "<iframe width='300' height='150' src='https://www.youtube.com/embed/o5Zrl_NLQTY' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
+      }else if(shisei >=20){
+          page.querySelector("#count_ten_0").innerHTML = "上記の動画を参照することをおすすめします。<br><p style='font-size:20px'>■簡単にできるストレッチ■</p><br>立ったまま手すりをつかんだり机に両手をついたりして、両腕を伸ばした状態で腰を90度くらいまで深く曲げて前かがみの姿勢になります。";
+          page.querySelector("#count_ten_1").innerHTML = "■着替え■<br>利用者様は基本的に座っているので、介護職員はやや前傾となり、腰に負担がかかります。";
+          page.querySelector("#count_ten_2").innerHTML = "腰を曲げるのではなく、腰を落とすようにして業務を行う。<br>";
+          page.querySelector("#count_ten_2_1").innerHTML ="コルセットなどのグッズを使用しましょう。<br>";
+          page.querySelector("#count_ten_2_2").innerHTML ="定期的なエクササイズ、ストレッチを行うようにしましょう。";
+          page.querySelector("#youtube").innerHTML = "<iframe width='300' height='150' src='https://www.youtube.com/embed/EaEWiFiXJzo' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
+          page.querySelector("#youtube2_yobou").innerHTML = "<iframe width='300' height='150' src='https://www.youtube.com/embed/5XjP5SaR_UM' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
+      }else if(shisei >=10){
+          page.querySelector("#count_ten_0").innerHTML = "上記の動画を参照することをおすすめします!<br><p style='font-size:20px'>■簡単にできるストレッチ■</p>事務機材を利用した大腿前面のストレッチをおすすめします。椅子（椅子机や棚も可）に手を置き右足を後ろに上げそれを持ち上げます。20~30秒間姿勢を維持し、左右それぞれ1~3回伸ばします。";
+          page.querySelector("#count_ten_1").innerHTML = "■食事■<br>介護職員が食事介助を行う際には基本的には座って介助を行います。ですが、多くの方の介助をしなければいけない場合、座っている余裕はなく、立っての介助となるので　中腰になってしまいます。";
+          page.querySelector("#count_ten_2").innerHTML = "腰を曲げるのではなく、腰を落とすようにして業務を行う。<br>";
+          page.querySelector("#count_ten_2_1").innerHTML ="コルセットなどのグッズを使用しましょう。<br>";
+          page.querySelector("#count_ten_2_2").innerHTML ="定期的なエクササイズ、ストレッチを行うようにしましょう。";
+          page.querySelector("#youtube").innerHTML = "<iframe width='300' height='150' src='https://www.youtube.com/embed/J_gfeAFe-2I' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
+          page.querySelector("#youtube2_yobou").innerHTML = "<iframe width='300' height='150' src='https://www.youtube.com/embed/o5Zrl_NLQTY' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"
+      }
+    });
+
+
+//-------------------ここからUI----------------------------------------------------
+//計測結果の表示をするか否かをUIで表示
+function hide(){
+    document.getElementById('modal2').hide();
+    stopDataReport();
+}
+function startData(){
+    document.getElementById("modal2").hide();
+ //goal.onClick = location.href="page2.html";
+          document.querySelector('#navigator').pushPage('page2.html',{data:{count_shisei:shisei}});
+          stopDataReport();
+    //傾いた回数を結果画面に表示するために変数を用意
+}
+function aler(){
+    var res = confirm("計測は初期化されますがよろしいですか？");
+    var back = document.getElementById("#back_home");
+    if(res == true){
+        //カウントを初期化する処理
+        document.querySelector("#navigator").pushPage("page1.html");
+        stopDataReport();
+    }else{
+
+    }
+}
+function rensyu(){
+    document.getElementById("#rensyu1").style.display ="none";
+    
+}
+
+
+  </script>
+</head>
+<body>
+  <ons-navigator id="navigator" page="page1.html"></ons-navigator>
+
+  <ons-template id="page1.html">
+    <ons-page id="first-page">
+      <ons-toolbar id="home_toolber">
+        <div class="center">HOME</div>
+      </ons-toolbar>
+
+      <div class="content" style="text-align: center">
+        <br><br><br><br><br><br><br>
+        <div data-step='1' data-intro="STARTボタンを押すと計測が開始されます" id="start_tutorial">
+        <ons-button id="push-button" onClick="Click(this)">START</ons-button>
+        </div>
+        
+        <br><br><br><br>
+        <ons-button id="help" onClick="introJs().start();">ヘルプ</ons-button>
+      </div>
+      
+
+    </ons-page>
+  </ons-template>
+
+  <ons-template id="page2.html">
+    <ons-page id="second-page">
+      <ons-toolbar id="kekka_toolber">
+        <div class="right"><ons-button onClick="aler()" id="back_home">HOMEへ</ons-button></div>
+        <div class="center">結果</div>
+      </ons-toolbar>
+<div id="count_goukei">
+
+</div>
+      <div class="content">
+      お疲れ様です！あなたの傾いた回数↓<br><p style='font-size:11px'>※厚生労働省に基づく、腰痛の原因になる傾きです。</p>
+      
+      
+      <div id="count_shisei">
+      </div>
+        <p class="border_0">ストレッチ方法</p>
+        <div id="youtube">
+        </div>
+<div>
+</div>
+<p id="count_ten_0">
+
+        <p class="border_0">考えられる原因</p>
+        
+        <p id="count_ten_1">
+
+      <p class="border_0">予防</p>
+      
+      <!-- ---------------------予防-------------------------------------------- -->
+      <p id="count_ten_2">
+      
+      </p>
+      
+      <p id="count_ten_2_1">
+      
+      
+      </p>
+      <p id="count_ten_2_2">
+      
+      </p>
+      <div id="youtube2_yobou">
+      
+      </div>
+
+      </div>
+    </ons-page>
+  </ons-template>
+  
+  
+ 
+  <!-- デバイス選択ダイアログ -->
+  <ons-dialog id="selectDeviceDialog">
+    <ons-list id="deviceList">
+    </ons-list>
+  </ons-dialog>
+
+
+
+  <!-- モーダルウィンドウ -->
+  <ons-modal id="modal">
+    <p>接続中...</p>
+    <ons-icon icon="spinner" size="28px" spin></ons-icon>
+  </ons-modal>
+
+
+
+  <ons-modal id="modal2">
+    <p>計測中...</p>
+    <ons-icon icon="spinner" size="28px" spin></ons-icon><br><br>
+    <ons-button onClick="hide()" id="reset">やりなおす</ons-button>
+    <ons-button onClick="startData()" id="goal">結果を出す</ons-button>
+  </ons-modal>
+  
+      
+</body>
+</html>

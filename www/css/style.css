@@ -1,0 +1,75 @@
+/**/
+body{
+ background-color: orange;
+}
+#toolbar{
+    background-color: #dd6040;
+}
+ons-tab{
+    background-color: #dd6040;
+    color:white;
+}
+#toolbar-title{
+    color:white;
+}
+#click {
+    color:white;
+    width:200px;
+    height:50px;
+    font-size:24px;
+    font-weight:bold;
+    text-decoration:none;
+    text-align: center;
+    margin: auto;
+    display:block;
+    padding:8px 0 10px;
+    background-color:#dd6040;
+    border-radius:25px;
+}
+#reset{
+    background-color: red;
+    margin-right: 30px;
+}
+#home_toolber{
+    background-color: orange;
+}
+#kekka_toolber{
+    background-color: orange;
+}
+#back_home{
+    background-color: orange;
+    color: white;
+}
+#push-button{
+    background-color: orange;
+    color: black;
+    font-size: 20px;
+    line-height:200px;
+    margin: auto;
+    font-size: 30px;
+    width: 200px;
+    height: 200px;
+    border-radius: 100px;
+}
+.border_0{
+    text-align: center;
+    margin-top: 40px;
+    width: 200px;
+    border-left: solid 7px blue;
+    border-bottom: solid 4px black;
+}
+p#modoru{
+    font-size: 6px;
+}
+#p1{
+    border: 2px solid black;
+}
+
+
+.right{
+    text-align: right;
+}
+#count_shisei{
+    font-size: 40px;
+}
+
